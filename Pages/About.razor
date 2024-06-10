@@ -1,0 +1,117 @@
+﻿@page "/about"
+<div class="info-section">
+    <img src="/css/open-iconic/font/fonts/TeleТочка2.png" class="logo">
+    <h2>О "ТелеТочке"</h2>
+    <p>
+        "ТелеТочка" - ваш надежный провайдер телекоммуникационных услуг для дома и офиса с более чем 20-летним опытом на рынке. Мы специализируемся на предоставлении качественных услуг интернета, телевидения и городского телефона, обеспечивая ваше соединение с миром в любое время.
+    </p>
+    <p>
+        Что делает "ТелеТочку" уникальным? Наше предложение включает в себя:
+    </p>
+    <ul>
+        <li>Телевидение: Широкий выбор каналов и программ, чтобы удовлетворить ваши разнообразные потребности в развлечениях и информации.</li>
+        <li>Интернет: Быстрый и надежный интернет с различными тарифными планами, чтобы соответствовать вашим потребностям в скорости и доступности онлайн.</li>
+        <li>Городской телефон: Надежная связь с вашими близкими, друзьями и партнерами с честными тарифами и качественным обслуживанием.</li>
+    </ul>
+    <p>
+        Мы ценим ваше время и комфорт, поэтому предлагаем:
+    </p>
+    <ul>
+        <li>Удобные тарифные планы: Понятные и простые в использовании тарифы, чтобы вы могли выбрать оптимальное решение для себя.</li>
+        <li>Быстрое оформление/расторжение договора: Мы ценим ваше решение и стремимся сделать процесс максимально простым и быстрым.</li>
+        <li>Доступность: Наши офисы всегда рядом с вами, чтобы обеспечить удобное обслуживание и поддержку.</li>
+        <li>Гарантированный срок подключения и выезд специалиста: Мы ценим ваше время, поэтому гарантируем быстрое подключение и оперативное решение любых технических проблем.</li>
+    </ul>
+    <p>
+        Просто, понятно и честно - "ТелеТочка" ваш оптимальный выбор для качественного подключения к миру связи! Сделайте "ТелеТочку" вашим лучшим качественным подключением!
+    </p>
+    <h2 class="contact-title">Контакты</h2>
+    <div class="contact-info">
+        <div class="contact-item">
+            <img src="/css/open-iconic/font/fonts/159832.png" alt="Phone Icon" class="icon">
+            <span>+996 (505) 93-03-15</span>
+        </div>
+        <div class="contact-item">
+            <img src="/css/open-iconic/font/fonts/281769.png" alt="Email Icon" class="icon">
+            <span>teletochka@support.com</span>
+        </div>
+        <div class="contact-item">
+            <img src="/css/open-iconic/font/fonts/whatsapp.png" alt="WhatsApp Icon" class="icon">
+            <span>+996 (505) 93-03-15</span>
+        </div>
+        <div class="contact-item">
+            <img src="/css/open-iconic/font/fonts/Telegram_Messenger.png" alt="Telegram Icon" class="icon">
+            <span>teletochka.support</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: url('/images/фон2.jpg') no-repeat center center fixed; /* Добавляем фоновое изображение */
+        background-size: cover;
+    }
+    .logo-container {
+        margin-bottom: 1em;
+    }
+
+    .logo {
+        margin-bottom: 10px; /* Отступ между логотипом и текстом */
+    }
+
+    .info-section {
+        max-width: 15000px;
+        margin: 0 auto;
+        padding: 50px;
+        background-color: #f9f9f9;
+        border-radius: 14px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+        .info-section h2 {
+            font-size: 48px;
+            margin-bottom: 32px;
+        }
+
+        .info-section p, .info-section ul {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .info-section ul {
+            padding-left: 40px;
+        }
+
+    .contact-title {
+        text-align: center;
+        margin-top: 40px;
+        font-size: 36px;
+    }
+
+    .contact-info {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px; /* Отступы между контактами */
+        margin-top: 20px;
+    }
+
+    .contact-item {
+        display: flex; /* Размещение элементов в ряд */
+        align-items: center; /* Выравнивание элементов по вертикали */
+    }
+
+        .contact-item img.icon {
+            margin-right: 10px; /* Отступ справа от иконки */
+            height: 40px; /* Размер иконки */
+            width: 40px; /* Размер иконки */
+        }
+
+        .contact-item span {
+            font-size: 28px; /* Размер текста */
+        }
+</style>

@@ -1,0 +1,48 @@
+﻿<nav>
+    <ul>
+        <li><NavLink href="" Match="NavLinkMatch.All">Главная</NavLink></li>
+        <li><NavLink href="services">Услуги</NavLink></li>
+        <li><NavLink href="about">Информация</NavLink></li>
+        <li><NavLink href="profile">Личный_кабинет</NavLink></li>
+        <NavLink href="submit-application" class="nav-link" Match="NavLinkMatch.All">Подача заявки</NavLink>
+
+    </ul>
+</nav>
+
+<style>
+    nav {
+        background-color: #004381; /* Цвет фона навигационного меню */
+    }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-between; /* Равномерное распределение элементов по ширине */
+            padding: 1em; /* Добавляем внутренний отступ */
+        }
+
+        nav li {
+            text-align: center;
+            flex-grow: 1; /* Распределение элементов */
+            margin: 0 9em; /* Пространство между элементами */
+        }
+
+        nav a {
+            text-decoration: none;
+            color: black; /* Цвет текста ссылок */
+            padding: 1em;
+            transition: color 0.3s; /* Плавный переход цвета текста */
+            font-size: 22px;
+        }
+
+            nav a:hover {
+                color: #004381; /* Изменение цвета текста при наведении */
+            }
+
+            nav a.active {
+                font-weight: bold;
+                border-bottom: 2px solid black; /* Подчеркивание активной ссылки */
+            }
+</style>

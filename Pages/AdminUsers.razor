@@ -1,0 +1,176 @@
+﻿@page "/admin/users"
+
+@using InternetPoint.Models
+@using Microsoft.EntityFrameworkCore
+@inject UserDbContext _dbContext
+@inject UserStateService UserStateService
+@inject IDbContextFactory<MyDbContext> _dbFactory;
+
+<h1>Список пользователей и их подключенных тарифов</h1>
+
+@if (users != null && users.Any())
+{
+    <div class="user-container">
+        @foreach (var user in users)
+        {
+            <div class="user-item">
+                <h2>@user.Name</h2>
+                <p>Email: @user.Email</p>
+                <p>Телефон: @user.phone</p>
+                <p>Адрес: @user.address</p>
+                <button class="btn btn-primary" @onclick="() => ToggleTariffs(user)">Подключенные тарифы</button>
+                @if (user.Orders != null && user.Orders.Any() && user.ShowTariffs)
+                {
+                    <ul class="tariff-list">
+                        @foreach (var order in user.Orders)
+                        {
+                            var service = services.FirstOrDefault(s => s.ServiceID == order.ServiceId);
+                            if (service != null)
+                            {
+                                <li>@service.Name - Цена: @service.Price, Скорость: @service.Speed</li>
+                            }
+                        }
+                    </ul>
+                }
+                else if (user.Orders == null || !user.Orders.Any())
+                {
+                    <p>Пользователь не подключил ни одного тарифа.</p>
+                }
+            </div>
+        }
+    </div>
+    <button class="btn btn-primary" @onclick="DownloadExcel">Распечатать</button>
+}
+else
+{
+    <p>Пользователи не найдены.</p>
+}
+
+@code {
+    private List<User> users;
+    private List<ServiceInfo> services;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            users = await _dbContext.Users.Include(u => u.Orders).ToListAsync();
+            services = await _dbContext.Services.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load data: {ex.Message}");
+        }
+    }
+
+    private void ToggleTariffs(User user)
+    {
+        user.ShowTariffs = !user.ShowTariffs;
+    }
+
+    private async Task DownloadExcel()
+    {
+        if (users == null || !users.Any())
+        {
+            Console.WriteLine("No users to download.");
+            return;
+        }
+
+        try
+        {
+            using (var package = new OfficeOpenXml.ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Users");
+                worksheet.Cells[1, 1].Value = "Имя";
+                worksheet.Cells[1, 2].Value = "Email";
+                worksheet.Cells[1, 3].Value = "Телефон";
+                worksheet.Cells[1, 4].Value = "Адрес";
+                worksheet.Cells[1, 5].Value = "Тарифы";
+
+                for (int i = 0; i < users.Count; i++)
+                {
+                    var user = users[i];
+                    worksheet.Cells[i + 2, 1].Value = user.Name;
+                    worksheet.Cells[i + 2, 2].Value = user.Email;
+                    worksheet.Cells[i + 2, 3].Value = user.phone;
+                    worksheet.Cells[i + 2, 4].Value = user.address;
+
+                    var userTariffs = user.Orders?.Select(order =>
+                    {
+                        var service = services.FirstOrDefault(s => s.ServiceID == order.ServiceId);
+                        return service != null ? $"{service.Name} - Цена: {service.Price}, Скорость: {service.Speed}" : "Неизвестный тариф";
+                    });
+
+                    worksheet.Cells[i + 2, 5].Value = userTariffs != null ? string.Join(", ", userTariffs) : "Нет подключенных тарифов";
+                }
+
+                var excelData = package.GetAsByteArray();
+                var fileName = "users.xlsx";
+
+                // Save the file to the user's download folder
+                var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", fileName);
+                await File.WriteAllBytesAsync(filePath, excelData);
+
+                // Print message to confirm the file download location
+                Console.WriteLine($"File saved at {filePath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to download excel: {ex.Message}");
+        }
+    }
+}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: url('/images/фон2.jpg') no-repeat center center fixed; /* Добавляем фоновое изображение */
+        background-size: cover;
+        font-family: Arial, sans-serif; /* Используем шрифт Arial или аналогичный */
+        color: #333; /* Цвет текста */
+    }
+
+    h1, h2, h3 {
+        color: #007bff; /* Цвет заголовков */
+    }
+
+    .user-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .user-item {
+        width: calc(33.33% - 20px);
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .tariff-list {
+        list-style-type: none; /* Убираем маркеры у списка */
+        padding-left: 0; /* Убираем отступ слева у списка */
+    }
+
+        .tariff-list li {
+            margin-bottom: 5px; /* Добавляем отступ между элементами списка */
+        }
+</style>

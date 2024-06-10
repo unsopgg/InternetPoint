@@ -1,0 +1,55 @@
+﻿@page "/customer-form"
+@using Microsoft.EntityFrameworkCore
+@using Models;
+@inject IDbContextFactory<MyDbContext> _dbFactory;
+@inject NavigationManager NavigationManager
+
+<div class="login-container">
+    <h2>Оформление заявки</h2>
+    <div class="form-group">
+        <label>Фамилия</label>
+        <input type="text" class="form-control" placeholder="Фамилия" @bind="_newCustomer.LastName"/>
+    </div>
+    <div class="form-group">
+        <label>Имя</label>
+        <input type="text" class="form-control" placeholder="Имя" @bind="_newCustomer.FirstName" />
+    </div>
+    <div class="form-group">
+        <label>Почта</label>
+        <input type="text" class="form-control" placeholder="Почта" @bind="_newCustomer.Email" />
+    </div>
+    <div class="form-group">
+        <label>Телефон</label>
+        <input type="text" class="form-control" placeholder="Телефон" @bind="_newCustomer.PhoneNumber" />
+    </div>
+    <div class="form-group">
+        <label>Адрес</label>
+        <input type="text" class="form-control" placeholder="Адрес" @bind="_newCustomer.Address" />
+    </div>
+    <div class="btn btn-primary" @onclick="OnSaveClick">Сохранить</div>
+</div>
+
+@code {
+    private Customer _newCustomer;
+    private MyDbContext _db;
+
+    protected override void OnInitialized()
+    {
+        _db = _dbFactory.CreateDbContext();
+        _newCustomer = new Customer();
+    }
+
+    private async Task OnSaveClick()
+    {
+        try
+        {
+            await _db.Customers.AddAsync(_newCustomer);
+            await _db.SaveChangesAsync();
+            NavigationManager.NavigateTo("/");
+        }
+        catch(Exception ex)
+        {
+            
+        }
+    }
+}

@@ -1,0 +1,205 @@
+﻿
+@page "/manage"
+@using InternetPoint.Models
+@using Microsoft.EntityFrameworkCore
+@inject UserStateService UserStateService
+@inject IDbContextFactory<MyDbContext> _dbFactory;
+@inject NavigationManager Navigation
+<div class="dashboard-layout">
+    <nav class="dashboard-nav">
+        <div>
+            <a><NavLink href="/user-profile">Личный кабинет</NavLink></a>
+            <a><NavLink href="/account-settings">Настройки</NavLink></a>
+            <a><NavLink href="/manage">Управление тарифами</NavLink></a>
+            <a><button @onclick="SignOut">Выйти</button></a>
+            <span></span>
+        </div>
+    </nav>
+</div>
+
+<h2 style="display: flex; justify-content: center; margin-top: 20px; margin-bottom: 40px;">Мои подключенные услуги</h2>
+<div class="owl-carousel">
+    @if (_plugServices != null)
+    {
+        @foreach (var service in _plugServices)
+        {
+            <div class="tariff-card">
+                <h3>Тариф @service.Name</h3>
+                <p>@service.Description</p>
+                <p>Скорость интернета: @service.Speed Мбит/с</p>
+                <p>Цена: @(service.Price)с в месяц</p>
+            </div>
+        }
+    }
+</div>
+@code {
+    MyDbContext _db;
+    private List<ServiceInfo> _plugServices;
+
+    protected override void OnInitialized()
+    {
+        _db = _dbFactory.CreateDbContext();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var userId = UserStateService.GetUserId();
+            _plugServices = await _db.Services.Where(w => _db.Orders.Any(a => a.UserId == userId && a.ServiceId == w.ServiceID)).ToListAsync();
+            StateHasChanged();
+        }
+    }
+    private async Task SignOut()
+    {
+        await UserStateService.SignOutAsync();
+        Navigation.NavigateTo("/");
+    }
+}
+<style>
+    .dashboard-nav {
+        display: flex;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-bottom: 1px solid #ccc;
+        text-align: center; /* Центрируем элементы */
+        font-size: 20px; /* Увеличиваем размер шрифта */
+        position: fixed; /* Фиксируем позиционирование */
+        width: 100%; /* Занимаем всю ширину */
+        top: 0; /* Помещаем вверх страницы */
+        left: 255px; /* Начинаем от левого края */
+        justify-content: center;
+        z-index: 9999; /* Устанавливаем высокий уровень наложения */
+    }
+
+
+        .dashboard-nav div {
+            position: relative;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            width: 1000px;
+            display: flex;
+            justify-content: center; /* Центрируем элементы по горизонтали */
+            align-items: center;
+        }
+
+
+        .dashboard-nav a {
+            position: relative;
+            display: inline-block;
+            font-weight: 500;
+            padding: 0 30px;
+            color: #007bff;
+            z-index: 1;
+            transition: .5s;
+        }
+
+        .dashboard-nav span {
+            position: absolute;
+            display: flex;
+            padding: 0 30px;
+            top: 0px;
+            left: 542px;
+            width: 280px;
+            height: 100%;
+            background: rgb(73, 33, 97);
+            border-radius: 8px;
+            transition: .5s;
+        }
+
+        .dashboard-nav a:nth-child(1):hover ~ span {
+            left: 30px;
+            width: 250px;
+        }
+
+        .dashboard-nav a:nth-child(2):hover ~ span {
+            left: 280px;
+            width: 250px;
+        }
+
+        .dashboard-nav a:nth-child(3):hover ~ span {
+            left: 542px;
+        }
+
+        .dashboard-nav a:nth-child(4):hover ~ span {
+            left: 865px;
+            width: 100px;
+        }
+
+        .dashboard-nav button {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 500;
+            transition: .5s;
+        }
+
+ 
+    .dashboard-nav button:hover {
+        text-decoration: underline;
+        color: #fff;
+    }
+
+    .dashboard-nav a:hover {
+        color: #fff;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: url('/images/фон2.jpg') no-repeat center center fixed; /* Добавляем фоновое изображение */
+        background-size: cover;
+    }
+
+    .owl-carousel {
+        display: inline-block;
+    }
+
+    .tariff-card {
+        display: inline-block;
+        background-color: rgb(90, 10, 90);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 40px; /* Увеличиваем отступы в 2 раза */
+        margin: 10px 10px;
+        width: 600px; /* Увеличиваем ширину в 2 раза */
+    }
+
+        .tariff-card h3 {
+            color: White;
+            margin-bottom: 20px; /* Увеличиваем отступы в 2 раза */
+        }
+
+        .tariff-card p {
+            color: lightgray;
+            margin-bottom: 20px; /* Увеличиваем отступы в 2 раза */
+        }
+
+    .tariff-buttons {
+        text-align: center;
+    }
+
+    .btn {
+        padding: 20px 40px; /* Увеличиваем отступы в 2 раза */
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-success {
+        color: #fff;
+        background-color: rgb(73, 23, 97);
+        transition: background-color 0.5s; /* Плавный переход цвета текста */
+        transition: color 0.5s; /* Плавный переход цвета текста */
+    }
+
+        .btn-success:hover {
+            background-color: rgb(238, 133, 238); /* Изменение цвета текста при наведении */
+            color: black; /* Изменение цвета текста при наведении */
+        }
+</style>

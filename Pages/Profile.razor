@@ -1,0 +1,88 @@
+﻿@page "/profile"
+@inherits LayoutComponentBase
+@inject InternetPoint.Services.UserStateService UserStateService
+@inject NavigationManager Navigation
+
+<div class="dashboard-layout">
+    <nav class="dashboard-nav">
+        <ul>
+            <li><NavLink href="/user-profile">Профиль</NavLink></li>
+            <li><NavLink href="/account-settings">Настройки</NavLink></li>
+            <li><NavLink href="/manage">Управление тарифами</NavLink></li>
+            <li><button @onclick="SignOut">Выйти</button></li>
+        </ul>
+    </nav>
+
+    <div class="dashboard-container">
+        @Body
+    </div>
+</div>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: url('/images/фон2.jpg') no-repeat center center fixed; /* Добавляем фоновое изображение */
+        background-size: cover;
+    }
+
+    /* Стили для навигации */
+    .dashboard-nav {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-bottom: 1px solid #ccc;
+        text-align: center; /* Центрируем элементы */
+        font-size: 20px; /* Увеличиваем размер шрифта */
+        position: fixed; /* Фиксируем позиционирование */
+        width: 100%; /* Занимаем всю ширину */
+        top: 0; /* Помещаем вверх страницы */
+        left: 5; /* Начинаем от левого края */
+        z-index: 9999; /* Устанавливаем высокий уровень наложения */
+    }
+
+        .dashboard-nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* Центрируем элементы по горизонтали */
+        }
+
+        .dashboard-nav li {
+            margin-right: 20px;
+        }
+
+        .dashboard-nav a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .dashboard-nav button {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 20px;
+        }
+
+            .dashboard-nav button:hover {
+                text-decoration: underline;
+            }
+
+    /* Стили для контента */
+    .dashboard-container {
+        padding: 20px;
+        margin-top: 80px; /* Верхний отступ контента, чтобы он не налагался на навигационное меню */
+        position: relative; /* Относительное позиционирование для дочерних элементов */
+    }
+</style>
+
+@code {
+    private async Task SignOut()
+    {
+        await UserStateService.SignOutAsync();
+        Navigation.NavigateTo("/");
+    }
+}

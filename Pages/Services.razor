@@ -1,0 +1,98 @@
+﻿@page "/services"
+@using InternetPoint.Models
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject PlugTariffService PlugTariffService
+@inject IDbContextFactory<MyDbContext> _dbFactory;
+
+<h2 style="display: flex; justify-content: center; margin-top: 20px; margin-bottom: 40px;">Наши услуги</h2>
+<div class="owl-carousel">
+    @if (_allServices != null)
+    {
+        @foreach (var service in _allServices)
+        {
+            <div class="tariff-card">
+                <h3>Тариф @service.Name</h3>
+                <p>@service.Description</p>
+                <p>Скорость интернета: @service.Speed Мбит/с</p>
+                <p>Цена: @(service.Price)с в месяц</p>
+                <div class="tariff-buttons">
+                    <button class="btn btn-success" @onclick="() => PlugTariffService.Plug(service)">Подключить</button>
+                </div>
+            </div>
+        }
+    }
+</div>
+@code {
+    MyDbContext _db;
+    private List<ServiceInfo> _allServices;
+
+    protected override void OnInitialized()
+    {
+        _db = _dbFactory.CreateDbContext();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _allServices = await _db.Services.ToListAsync();
+            StateHasChanged();
+        }
+    }
+}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: url('/images/фон2.jpg') no-repeat center center fixed; /* Добавляем фоновое изображение */
+        background-size: cover;
+    }
+    .owl-carousel {
+        display: inline-block;
+    }
+
+    .tariff-card {
+        display: inline-block;
+        background-color: rgb(90, 10, 90);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 40px; /* Увеличиваем отступы в 2 раза */
+        margin: 10px 10px;
+        width: 600px; /* Увеличиваем ширину в 2 раза */
+    }
+
+        .tariff-card h3 {
+            color: White;
+            margin-bottom: 20px; /* Увеличиваем отступы в 2 раза */
+        }
+
+        .tariff-card p {
+            color: lightgray;
+            margin-bottom: 20px; /* Увеличиваем отступы в 2 раза */
+        }
+
+    .tariff-buttons {
+        text-align: center;
+    }
+
+    .btn {
+        padding: 20px 40px; /* Увеличиваем отступы в 2 раза */
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-success {
+        color: #fff;
+        background-color: rgb(73, 23, 97);
+        transition: background-color 0.5s; /* Плавный переход цвета текста */
+        transition: color 0.5s; /* Плавный переход цвета текста */
+    }
+
+        .btn-success:hover {
+            background-color: rgb(238, 133, 238); /* Изменение цвета текста при наведении */
+            color: black; /* Изменение цвета текста при наведении */
+        }
+</style>

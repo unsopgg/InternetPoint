@@ -1,0 +1,212 @@
+﻿@page "/admin/usermanagement"
+@using InternetPoint.Models
+@using Microsoft.EntityFrameworkCore
+@inject UserStateService UserState
+@inherits LayoutComponentBase
+@inject InternetPoint.Services.UserStateService UserStateService
+@inject NavigationManager Navigation
+@inject IDbContextFactory<MyDbContext> _dbFactory;
+
+@if (_editCustomers != null && _editCustomers.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Код заявки</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Почта</th>
+                <th scope="col">Телефон</th>
+                <th scope="col">Адрес</th>
+                <th scope="col">Статус обработки</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in _editCustomers)
+            {
+                <tr>
+                    <td>@customer.CustomerId</td>
+                    <td>@customer.LastName</td>
+                    <td>@customer.FirstName</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.PhoneNumber</td>
+                    <td>@customer.Address</td>
+                    <td>@(customer.Executed ? "обработан" : "ожидание")</td>
+                    <td><button class="btn btn-primary" @onclick="() => Answer(customer)" disabled="@customer.Executed">Ответить</button></td>
+                    <td><button class="btn btn-primary" @onclick="() => Delete(customer)">Удалить</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div>Заявок нет</div>
+}
+
+<button class="btn btn-primary" @onclick="SignOut">Выйти</button>
+<button class="btn btn-primary" @onclick="NavigateToUsers">Пользователи</button>
+<button class="btn btn-primary" @onclick="DownloadExcel">Распечатать</button>
+
+@code {
+    MyDbContext _db;
+    private List<Customer> _editCustomers = new List<Customer>(); // Инициализация пустым списком
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            _db = _dbFactory.CreateDbContext();
+            Console.WriteLine("Database context initialized successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to initialize database context: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadCustomers();
+        }
+    }
+
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            if (_db != null)
+            {
+                _editCustomers = await _db.Customers.ToListAsync();
+                Console.WriteLine("Customers loaded successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Database context is null. Cannot load customers.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load customers: {ex.Message}");
+        }
+        StateHasChanged();
+    }
+
+    private async Task Delete(Customer pCustomer)
+    {
+        if (pCustomer != null)
+        {
+            try
+            {
+                _db.Remove(pCustomer);
+                await _db.SaveChangesAsync();
+                await LoadCustomers();
+                Console.WriteLine($"Customer {pCustomer.CustomerId} deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete customer: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task Answer(Customer pCustomer)
+    {
+        if (pCustomer != null)
+        {
+            try
+            {
+                pCustomer.Executed = true;
+                await _db.SaveChangesAsync();
+                await LoadCustomers();
+                Console.WriteLine($"Customer {pCustomer.CustomerId} answered successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to answer customer: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task SignOut()
+    {
+        try
+        {
+            await UserStateService.SignOutAsync();
+            Navigation.NavigateTo("/");
+            Console.WriteLine("Signed out successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to sign out: {ex.Message}");
+        }
+    }
+
+    private void NavigateToUsers()
+    {
+        Navigation.NavigateTo("/admin/users");
+    }
+
+    private async Task DownloadExcel()
+    {
+        if (_editCustomers == null || !_editCustomers.Any())
+        {
+            Console.WriteLine("No customers to download.");
+            return;
+        }
+
+        try
+        {
+            using (var package = new OfficeOpenXml.ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Customers");
+                worksheet.Cells[1, 1].Value = "Код заявки";
+                worksheet.Cells[1, 2].Value = "Фамилия";
+                worksheet.Cells[1, 3].Value = "Имя";
+                worksheet.Cells[1, 4].Value = "Почта";
+                worksheet.Cells[1, 5].Value = "Телефон";
+                worksheet.Cells[1, 6].Value = "Адрес";
+                worksheet.Cells[1, 7].Value = "Статус обработки";
+
+                for (int i = 0; i < _editCustomers.Count; i++)
+                {
+                    worksheet.Cells[i + 2, 1].Value = _editCustomers[i].CustomerId;
+                    worksheet.Cells[i + 2, 2].Value = _editCustomers[i].LastName;
+                    worksheet.Cells[i + 2, 3].Value = _editCustomers[i].FirstName;
+                    worksheet.Cells[i + 2, 4].Value = _editCustomers[i].Email;
+                    worksheet.Cells[i + 2, 5].Value = _editCustomers[i].PhoneNumber;
+                    worksheet.Cells[i + 2, 6].Value = _editCustomers[i].Address;
+                    worksheet.Cells[i + 2, 7].Value = _editCustomers[i].Executed ? "обработан" : "ожидание";
+                }
+
+                var excelData = package.GetAsByteArray();
+                var fileName = "customers.xlsx";
+
+                // Save the file to the user's download folder
+                var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", fileName);
+                await File.WriteAllBytesAsync(filePath, excelData);
+
+                // Print message to confirm the file download location
+                Console.WriteLine($"File saved at {filePath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to download excel: {ex.Message}");
+        }
+    }
+}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: url('/images/фон2.jpg') no-repeat center center fixed; /* Добавляем фоновое изображение */
+        background-size: cover;
+    }
+</style>
